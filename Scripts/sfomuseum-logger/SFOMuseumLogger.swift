@@ -22,7 +22,9 @@ struct App: AsyncParsableCommand {
     func run() throws {
         
         let opts = SFOMuseumLoggerOptions(label: label, console: console, logfile: logfile, verbose: verbose)
-        let logger = try NewSFOMuseumLogger(opts)
+        var logger = try NewSFOMuseumLogger(opts)
+        
+        logger[metadataKey: "metadata"] = "debug"
         
         for txt in args {
             logger.info("\(txt)")

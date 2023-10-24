@@ -47,9 +47,9 @@ public func DefaultSFOMuseumLogHandlers(_ options: SFOMuseumLoggerOptions) -> [L
     
     if options.logfile {
         
-        DDLog.add(DDOSLogger.sharedInstance)
+        // DDLog.add(DDOSLogger.sharedInstance)
         
-        let fileLogger: DDFileLogger = DDFileLogger() // File Logger
+        let fileLogger: DDFileLogger = DDFileLogger()
 
         fileLogger.rollingFrequency = 60 * 60 * 24
         
@@ -58,8 +58,8 @@ public func DefaultSFOMuseumLogHandlers(_ options: SFOMuseumLoggerOptions) -> [L
         }
         
         DDLog.add(fileLogger)
-            
-        let h = cocoaLumberjackHandler()
+                    
+        let h = cocoaLumberjackHandler(label: options.label)
         handlers.append(h)
     }
     
@@ -82,11 +82,12 @@ internal func cocoaLumberjackHandler(
     defaultLogLevel: Logger.Level = .info,
     loggingSynchronousAsOf syncLoggingTreshold: Logger.Level = .error,
     synchronousLoggingMetadataKey: Logger.Metadata.Key = DDLogHandler.defaultSynchronousLoggingMetadataKey,
-    metadataProvider: Logger.MetadataProvider? = nil
+    metadataProvider: Logger.MetadataProvider? = nil,
+    label: String
 ) -> LogHandler {
     
     return DDLogHandler.handlerFactory(for: log,
                                           defaultLogLevel: defaultLogLevel,
                                           loggingSynchronousAsOf: syncLoggingTreshold,
-                                          synchronousLoggingMetadataKey: synchronousLoggingMetadataKey)("log")
+                                          synchronousLoggingMetadataKey: synchronousLoggingMetadataKey)(label)
 }
