@@ -1,6 +1,5 @@
 import ArgumentParser
 import SFOMuseumLogger
-import Foundation
 
 @main
 struct App: AsyncParsableCommand {
@@ -17,15 +16,17 @@ struct App: AsyncParsableCommand {
     @Option(help: "Enable verbose logging")
     var verbose: Bool = false
     
+    @Argument
+    var args: [String]
+    
     func run() throws {
         
         let opts = SFOMuseumLoggerOptions(label: label, console: console, logfile: logfile, verbose: verbose)
+        let logger = try NewSFOMuseumLogger(opts)
         
-        var logger = try NewSFOMuseumLogger(opts)
-        logger[metadataKey: "request-uuid"] = "\(UUID())"
-        logger.logLevel = .debug
-        
-        logger.info("Hello world WOO")
+        for txt in args {
+            logger.info("\(txt)")
+        }
     }
 }
 

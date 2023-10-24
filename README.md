@@ -6,7 +6,7 @@ An opinionated Swift package for creating `log-swift` instances in a SFO Museum 
 
 Work in progress.
 
-
 ## See also
 
 * https://github.com/apple/swift-log
+* https://github.com/CocoaLumberjack/CocoaLumberjack

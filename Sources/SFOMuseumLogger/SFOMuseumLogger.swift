@@ -7,13 +7,15 @@ public struct SFOMuseumLoggerOptions {
     public var label: String
     public var console: Bool = true
     public var logfile: Bool = false
+    public var max_logfiles: UInt = 7
     public var verbose: Bool = false
     public var handlers: [LogHandler]?
     
-    public init(label: String, console: Bool = true, logfile: Bool = false, verbose: Bool = false, handlers: [LogHandler]? = nil) {
+    public init(label: String, console: Bool = true, logfile: Bool = false, max_logfiles: UInt = 7, verbose: Bool = false, handlers: [LogHandler]? = nil) {
         self.label = label
         self.console = console
         self.logfile = logfile
+        self.max_logfiles = max_logfiles
         self.verbose = verbose
         self.handlers = handlers
     }
@@ -50,7 +52,11 @@ public func DefaultSFOMuseumLogHandlers(_ options: SFOMuseumLoggerOptions) -> [L
         let fileLogger: DDFileLogger = DDFileLogger() // File Logger
 
         fileLogger.rollingFrequency = 60 * 60 * 24
-        fileLogger.logFileManager.maximumNumberOfLogFiles = 7
+        
+        if options.max_logfiles > 0 {
+            fileLogger.logFileManager.maximumNumberOfLogFiles = options.max_logfiles
+        }
+        
         DDLog.add(fileLogger)
             
         let h = cocoaLumberjackHandler()
@@ -69,7 +75,7 @@ public func DefaultSFOMuseumLogHandlers(_ options: SFOMuseumLoggerOptions) -> [L
     return handlers
 }
 
-// Cribbed from CocoaLumnberjack source
+// Cribbed from CocoaLumberjack source
 
 internal func cocoaLumberjackHandler(
     for log: DDLog = .sharedInstance,
