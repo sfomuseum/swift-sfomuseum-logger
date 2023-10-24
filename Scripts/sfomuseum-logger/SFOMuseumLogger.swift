@@ -11,23 +11,21 @@ struct App: AsyncParsableCommand {
     @Option(help: "Log events to the console")
     var console: Bool = true
     
-    @Option(help: "Log events to a specific log file (optional)")
-    var log_file: String? = nil
+    @Option(help: "Log events to system log file")
+    var logfile: Bool = false
     
     @Option(help: "Enable verbose logging")
     var verbose: Bool = false
     
-    func run() async throws {
+    func run() throws {
         
-        print("OMG")
-        let opts = SFOMuseumLoggerOptions(label: label, console: console, verbose: verbose)
+        let opts = SFOMuseumLoggerOptions(label: label, console: console, logfile: logfile, verbose: verbose)
         
-        print("WTF")
         var logger = try NewSFOMuseumLogger(opts)
         logger[metadataKey: "request-uuid"] = "\(UUID())"
+        logger.logLevel = .debug
         
-        print("POO")
-        logger.info("Hello world")
+        logger.info("Hello world WOO")
     }
 }
 

@@ -6,11 +6,11 @@ import CocoaLumberjackSwiftLogBackend
 public struct SFOMuseumLoggerOptions {
     public var label: String
     public var console: Bool = true
-    public var logfile: String?
+    public var logfile: Bool = false
     public var verbose: Bool = false
     public var handlers: [LogHandler]?
     
-    public init(label: String, console: Bool = true, logfile: String? = nil, verbose: Bool = false, handlers: [LogHandler]? = nil) {
+    public init(label: String, console: Bool = true, logfile: Bool = false, verbose: Bool = false, handlers: [LogHandler]? = nil) {
         self.label = label
         self.console = console
         self.logfile = logfile
@@ -20,26 +20,6 @@ public struct SFOMuseumLoggerOptions {
 }
 
 public func NewSFOMuseumLogger(_ options: SFOMuseumLoggerOptions) throws -> Logger  {
-    
-    if options.console {
-        DDLog.add(DDOSLogger.sharedInstance)
-    }
-    
-    if options.logfile != nil {
-        let fileLogger: DDFileLogger = DDFileLogger() // File Logger
-        fileLogger.value(forKeyPath: options.logfile!)
-        
-        // fileLogger.maximumFileSize = 100
-        fileLogger.rollingFrequency = 60 * 60 * 24 // 24 hours
-        fileLogger.logFileManager.maximumNumberOfLogFiles = 7
-        DDLog.add(fileLogger)
-    }
-    
-    LoggingSystem.bootstrapWithCocoaLumberjack()
-    return Logger(label: options.label)
-}
-
-public func xNewSFOMuseumLogger(_ options: SFOMuseumLoggerOptions) throws -> Logger  {
 
     var handlers = options.handlers
     
@@ -63,6 +43,20 @@ public func DefaultSFOMuseumLogHandlers(_ options: SFOMuseumLoggerOptions) -> [L
         handlers.append(h)
     }
     
+    if options.logfile {
+        
+        DDLog.add(DDOSLogger.sharedInstance)
+        
+        let fileLogger: DDFileLogger = DDFileLogger() // File Logger
+
+        fileLogger.rollingFrequency = 60 * 60 * 24
+        fileLogger.logFileManager.maximumNumberOfLogFiles = 7
+        DDLog.add(fileLogger)
+            
+        let h = cocoaLumberjackHandler()
+        handlers.append(h)
+    }
+    
     for (idx, _) in handlers.enumerated() {
         
         if options.verbose {
@@ -73,4 +67,20 @@ public func DefaultSFOMuseumLogHandlers(_ options: SFOMuseumLoggerOptions) -> [L
     }
     
     return handlers
+}
+
+// Cribbed from CocoaLumnberjack source
+
+internal func cocoaLumberjackHandler(
+    for log: DDLog = .sharedInstance,
+    defaultLogLevel: Logger.Level = .info,
+    loggingSynchronousAsOf syncLoggingTreshold: Logger.Level = .error,
+    synchronousLoggingMetadataKey: Logger.Metadata.Key = DDLogHandler.defaultSynchronousLoggingMetadataKey,
+    metadataProvider: Logger.MetadataProvider? = nil
+) -> LogHandler {
+    
+    return DDLogHandler.handlerFactory(for: log,
+                                          defaultLogLevel: defaultLogLevel,
+                                          loggingSynchronousAsOf: syncLoggingTreshold,
+                                          synchronousLoggingMetadataKey: synchronousLoggingMetadataKey)("log")
 }
