@@ -13,13 +13,16 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-argument-parser", from: "1.2.0"),
-        .package(url: "https://github.com/apple/swift-log.git", from: "1.5.3")
+        .package(url: "https://github.com/apple/swift-log.git", from: "1.5.3"),
+        .package(url: "https://github.com/CocoaLumberjack/CocoaLumberjack.git", from: "3.8.0"),
     ],
     targets: [
         .target(
             name: "SFOMuseumLogger",
             dependencies: [
-                .product(name: "Logging", package: "swift-log")
+                .product(name: "Logging", package: "swift-log"),
+                .product(name: "CocoaLumberjack", package: "CocoaLumberjack"),
+                .product(name: "CocoaLumberjackSwiftLogBackend", package: "CocoaLumberjack")
             ]
         ),
         .executableTarget(

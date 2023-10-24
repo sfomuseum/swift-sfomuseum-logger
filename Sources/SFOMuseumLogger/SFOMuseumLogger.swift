@@ -1,5 +1,7 @@
 import Foundation
 import Logging
+import CocoaLumberjack
+import CocoaLumberjackSwiftLogBackend
 
 public struct SFOMuseumLoggerOptions {
     public var label: String
@@ -18,6 +20,26 @@ public struct SFOMuseumLoggerOptions {
 }
 
 public func NewSFOMuseumLogger(_ options: SFOMuseumLoggerOptions) throws -> Logger  {
+    
+    if options.console {
+        DDLog.add(DDOSLogger.sharedInstance)
+    }
+    
+    if options.logfile != nil {
+        let fileLogger: DDFileLogger = DDFileLogger() // File Logger
+        fileLogger.value(forKeyPath: options.logfile!)
+        
+        // fileLogger.maximumFileSize = 100
+        fileLogger.rollingFrequency = 60 * 60 * 24 // 24 hours
+        fileLogger.logFileManager.maximumNumberOfLogFiles = 7
+        DDLog.add(fileLogger)
+    }
+    
+    LoggingSystem.bootstrapWithCocoaLumberjack()
+    return Logger(label: options.label)
+}
+
+public func xNewSFOMuseumLogger(_ options: SFOMuseumLoggerOptions) throws -> Logger  {
 
     var handlers = options.handlers
     
