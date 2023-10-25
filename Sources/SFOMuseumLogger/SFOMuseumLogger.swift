@@ -90,6 +90,7 @@ internal func cocoaLumberjackHandler(
                                           synchronousLoggingMetadataKey: synchronousLoggingMetadataKey)(label)
 }
 
+// https://github.com/CocoaLumberjack/CocoaLumberjack/discussions/1389
 // https://github.com/CocoaLumberjack/CocoaLumberjack/blob/master/Documentation/CustomFormatters.md
 // https://github.com/apple/swift-log/blob/main/Sources/Logging/Logging.swift#L1347
 
