@@ -50,12 +50,13 @@ public func DefaultSFOMuseumLogHandlers(_ options: SFOMuseumLoggerOptions) -> [L
         // DDLog.add(DDOSLogger.sharedInstance)
         
         let fileLogger: DDFileLogger = DDFileLogger()
-
         fileLogger.rollingFrequency = 60 * 60 * 24
         
         if options.max_logfiles > 0 {
             fileLogger.logFileManager.maximumNumberOfLogFiles = options.max_logfiles
         }
+        
+        fileLogger.logFormatter = ddLogFormatter(label: options.label) // description: options.label, hash: 0)
         
         DDLog.add(fileLogger)
                     
@@ -91,3 +92,65 @@ internal func cocoaLumberjackHandler(
                                           loggingSynchronousAsOf: syncLoggingTreshold,
                                           synchronousLoggingMetadataKey: synchronousLoggingMetadataKey)(label)
 }
+
+// https://github.com/CocoaLumberjack/CocoaLumberjack/blob/master/Documentation/CustomFormatters.md
+// https://github.com/apple/swift-log/blob/main/Sources/Logging/Logging.swift#L1347
+
+internal class ddLogFormatter: NSObject, DDLogFormatter {
+
+    var label: String
+    
+    init(label: String) {
+        self.label = label
+    }
+    
+    func format(message logMessage: DDLogMessage) -> String? {
+                
+        var prettyMetadata: String = ""
+        
+        if let effectiveMetadata = logMessage.swiftLogInfo?.mergedMetadata {
+            if let pretty = self.prettify(effectiveMetadata) {
+                prettyMetadata = pretty
+            }
+        }
+        
+        let date_fmt = DateFormatter()
+        date_fmt.dateFormat = "yyyy/MM/dd HH:mm:ss:SSS"
+        
+        let date_str = date_fmt.string(from: logMessage.timestamp)
+        
+        return "\(date_str) \(logMessage.level.rawValue) \(self.label) : \(prettyMetadata) [source] \(logMessage.message)"
+    }
+    
+    /* Cribbed from https://github.com/apple/swift-log/blob/main/Sources/Logging/Logging.swift#L1347 */
+    
+    internal static func prepareMetadata(base: Logger.Metadata, provider: Logger.MetadataProvider?, explicit: Logger.Metadata?) -> Logger.Metadata? {
+           var metadata = base
+
+           let provided = provider?.get() ?? [:]
+
+           guard !provided.isEmpty || !((explicit ?? [:]).isEmpty) else {
+               // all per-log-statement values are empty
+               return nil
+           }
+
+           if !provided.isEmpty {
+               metadata.merge(provided, uniquingKeysWith: { _, provided in provided })
+           }
+
+           if let explicit = explicit, !explicit.isEmpty {
+               metadata.merge(explicit, uniquingKeysWith: { _, explicit in explicit })
+           }
+
+           return metadata
+       }
+
+       private func prettify(_ metadata: Logger.Metadata) -> String? {
+           if metadata.isEmpty {
+               return nil
+           } else {
+               return metadata.lazy.sorted(by: { $0.key < $1.key }).map { "\($0)=\($1)" }.joined(separator: " ")
+           }
+       }
+}
+
