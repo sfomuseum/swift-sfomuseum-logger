@@ -46,9 +46,7 @@ public func DefaultSFOMuseumLogHandlers(_ options: SFOMuseumLoggerOptions) -> [L
     }
     
     if options.logfile {
-        
-        // DDLog.add(DDOSLogger.sharedInstance)
-        
+                
         let fileLogger: DDFileLogger = DDFileLogger()
         fileLogger.rollingFrequency = 60 * 60 * 24
         
@@ -56,8 +54,7 @@ public func DefaultSFOMuseumLogHandlers(_ options: SFOMuseumLoggerOptions) -> [L
             fileLogger.logFileManager.maximumNumberOfLogFiles = options.max_logfiles
         }
         
-        fileLogger.logFormatter = ddLogFormatter(label: options.label) // description: options.label, hash: 0)
-        
+        fileLogger.logFormatter = ddLogFormatter(label: options.label)
         DDLog.add(fileLogger)
                     
         let h = cocoaLumberjackHandler(label: options.label)
@@ -76,7 +73,7 @@ public func DefaultSFOMuseumLogHandlers(_ options: SFOMuseumLoggerOptions) -> [L
     return handlers
 }
 
-// Cribbed from CocoaLumberjack source
+/* Cribbed from CocoaLumberjack source */
 
 internal func cocoaLumberjackHandler(
     for log: DDLog = .sharedInstance,
@@ -105,21 +102,55 @@ internal class ddLogFormatter: NSObject, DDLogFormatter {
     }
     
     func format(message logMessage: DDLogMessage) -> String? {
-                
-        var prettyMetadata: String = ""
+         
+        var str_metadata = ""
+        var str_label = ""
+        var str_source = ""
+        var str_level = ""
         
-        if let effectiveMetadata = logMessage.swiftLogInfo?.mergedMetadata {
-            if let pretty = self.prettify(effectiveMetadata) {
-                prettyMetadata = pretty
+        if let log_info = logMessage.swiftLogInfo {
+            
+            let swift_logger = log_info.logger
+            let swift_message = log_info.message
+            let swift_metadata = log_info.mergedMetadata
+            
+            str_level = swift_message.level.rawValue
+            str_source = swift_message.source
+            str_label = swift_logger.label
+            
+            if let pretty = self.prettify(swift_metadata) {
+                str_metadata = pretty
+            }
+            
+        } else {
+            
+            str_source = logMessage.fileName
+            str_label = self.label
+            
+            switch logMessage.level {
+            case .all:
+                str_level = "all"
+            case .verbose:
+                str_level = "verbose"
+            case .debug:
+                str_level = "debug"
+            case .info:
+                str_level = "info"
+            case .warning:
+                str_level = "warning"
+            case .error:
+                str_level = "error"
+            default:
+                str_level = "unknown (\(logMessage.level))"
             }
         }
         
         let date_fmt = DateFormatter()
-        date_fmt.dateFormat = "yyyy/MM/dd HH:mm:ss:SSS"
+        date_fmt.dateFormat = "yyyy/MM/dd HH:mm:ssZ"
         
-        let date_str = date_fmt.string(from: logMessage.timestamp)
+        let str_date = date_fmt.string(from: logMessage.timestamp)
         
-        return "\(date_str) \(logMessage.level.rawValue) \(self.label) : \(prettyMetadata) [source] \(logMessage.message)"
+        return "\(str_date) \(str_level) \(str_label) : \(str_metadata) [\(str_source)] \(logMessage.message)"
     }
     
     /* Cribbed from https://github.com/apple/swift-log/blob/main/Sources/Logging/Logging.swift#L1347 */
