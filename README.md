@@ -43,8 +43,8 @@ let opts = SFOMuseumLoggerOptions(
 
 var handlers = DefaultSFOMuseumLogHandlers(opts)
 handlers.append(StreamLogHandler.standardError(label: label)
-
 opts.handlers = handlers
+
 let logger = try NewSFOMuseumLogger(opts)
 ```
 
