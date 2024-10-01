@@ -21,14 +21,16 @@ public struct SFOMuseumLoggerOptions {
     }
 }
 
-public func NewSFOMuseumLogger(_ options: SFOMuseumLoggerOptions) throws -> Logger  {
-
-    var handlers = options.handlers
+public func NewSFOMuseumLogger(_ options: SFOMuseumLoggerOptions) throws -> Logging.Logger  {
     
-    if handlers == nil {
+    let handlers: [LogHandler]?
+    
+    if options.handlers == nil {
         handlers = DefaultSFOMuseumLogHandlers(options)
+    } else {
+        handlers = options.handlers
     }
-    
+            
     LoggingSystem.bootstrap {_ in
         return MultiplexLogHandler(handlers!)
     }
@@ -77,10 +79,10 @@ public func DefaultSFOMuseumLogHandlers(_ options: SFOMuseumLoggerOptions) -> [L
 
 internal func cocoaLumberjackHandler(
     for log: DDLog = .sharedInstance,
-    defaultLogLevel: Logger.Level = .info,
-    loggingSynchronousAsOf syncLoggingTreshold: Logger.Level = .error,
-    synchronousLoggingMetadataKey: Logger.Metadata.Key = DDLogHandler.defaultSynchronousLoggingMetadataKey,
-    metadataProvider: Logger.MetadataProvider? = nil,
+    defaultLogLevel: Logging.Logger.Level = .info,
+    loggingSynchronousAsOf syncLoggingTreshold: Logging.Logger.Level = .error,
+    synchronousLoggingMetadataKey: Logging.Logger.Metadata.Key = DDLogHandler.defaultSynchronousLoggingMetadataKey,
+    metadataProvider: Logging.Logger.MetadataProvider? = nil,
     label: String
 ) -> LogHandler {
     
@@ -156,7 +158,7 @@ internal class ddLogFormatter: NSObject, DDLogFormatter {
     
     /* Cribbed from https://github.com/apple/swift-log/blob/main/Sources/Logging/Logging.swift#L1347 */
     
-    internal static func prepareMetadata(base: Logger.Metadata, provider: Logger.MetadataProvider?, explicit: Logger.Metadata?) -> Logger.Metadata? {
+    internal static func prepareMetadata(base: Logging.Logger.Metadata, provider: Logging.Logger.MetadataProvider?, explicit: Logging.Logger.Metadata?) -> Logging.Logger.Metadata? {
            var metadata = base
 
            let provided = provider?.get() ?? [:]
@@ -177,7 +179,7 @@ internal class ddLogFormatter: NSObject, DDLogFormatter {
            return metadata
        }
 
-       private func prettify(_ metadata: Logger.Metadata) -> String? {
+    private func prettify(_ metadata: Logging.Logger.Metadata) -> String? {
            if metadata.isEmpty {
                return nil
            } else {
